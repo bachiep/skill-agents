@@ -2,6 +2,8 @@
 
 Concrete before/after pairs for the principles in `skills/skill-agent/SKILL.md`. Each shows the failure mode, then the disciplined version.
 
+**Provenance.** Examples 3 and 4 are adapted from real cases reported by Sumit Pandey in ["A Single CLAUDE.md File Went Viral"](https://viblo.asia/p/mot-file-claudemd-vua-viral-ly-do-don-gian-den-muc-xau-ho-wlVmRw7045Z) (Viblo, via Towards Deep Learning). The rest are illustrative — constructed from failure patterns widely reported by practitioners, not from a single measured study. Treat them as teaching aids, not as empirical data.
+
 ---
 
 ## 1. Verify, don't claim (Principle 5)
@@ -36,6 +38,8 @@ Concrete before/after pairs for the principles in `skills/skill-agent/SKILL.md`.
 
 ## 3. Simplicity first (Principle 2)
 
+*Adapted from a real case reported by Sumit Pandey: asked to add a small cache layer to a Polars pipeline, the agent rewrote the function signature, added an unrequested dependency-injection pattern, and wrapped the cache in a class with 8 methods that would never be called — when the cache itself needed 3 lines.*
+
 **Bad** — speculative abstraction for a one-off need:
 
 ```python
@@ -63,6 +67,8 @@ def send_welcome_email(to: str) -> None:
 ---
 
 ## 4. Surgical changes (Principle 3)
+
+*Adapted from a real case reported by Sumit Pandey: asked to fix a date-parsing bug, the agent fixed it correctly — then reformatted the entire file, converted two unrelated functions from list comprehensions to loops, and added type hints to functions in another module.*
 
 **Bad** — drive-by "improvements" in the same diff:
 
@@ -126,3 +132,57 @@ def send_welcome_email(to: str) -> None:
 > "Query failed with `permission denied for table orders` **(failed read, not proof of absence)**. I can't confirm whether the table exists. Next step: check with credentials that have read access, or ask the DBA."
 
 *Failed ≠ absent. Blocked ≠ failed. Unknown ≠ fine. Name the state you actually observed.*
+
+---
+
+## 8. Think before coding (Principle 1)
+
+**Bad** — silently picking an interpretation:
+
+> User: "Add caching to the user lookup."
+>
+> Agent (thinking): *They probably mean Redis.* → Adds a Redis dependency, a connection pool, cache-invalidation hooks, and Docker config. The user actually wanted a 3-line in-memory dict because the service is a single-process script.
+>
+> *The agent never surfaced the assumption. Two hours of work answered the wrong question.*
+
+**Good** — surfacing the ambiguity first:
+
+> Agent: "Two ways to do this: (a) a 3-line in-memory cache — zero dependencies, lost on restart; (b) Redis — survives restarts, needs infra. This looks like a single-process script, so I'd go with (a) unless you expect multiple instances. Which do you want?"
+
+*Thirty seconds of clarification beats two hours of confident wrong work. Note the agent also stated its leaning and why — the user can just say "yes."*
+
+---
+
+## 9. Goal-driven execution (Principle 4)
+
+**Bad** — weak success criteria:
+
+> User: "Make the import faster."
+>
+> Agent: tweaks a few things, reports "Import is now faster."
+>
+> *Faster than what? By how much, measured how? Nobody can check this claim — including the agent.*
+
+**Good** — verifiable goals before code:
+
+> Agent: "Plan: 1. Benchmark current import on `data/sample_10k.csv` → record baseline (verify: timing printed). 2. Profile to find the hotspot (verify: profile output names the function). 3. Optimize the hotspot only (verify: same output rows, benchmark re-run shows ≥2x speedup). I'll report the before/after numbers."
+>
+> *Each step names its check. "Done" is checkable by anyone.*
+
+---
+
+## 10. Over-application: when discipline becomes the problem (Cost discipline)
+
+**Bad** — interrogation for a trivial task:
+
+> User: "Rename `tmp` to `scratch_dir` in `cleanup.py`."
+>
+> Agent: "Before I proceed: 1. Should the rename apply to comments too? 2. Do you want me to check other files for references? 3. Should I run the full test suite after? 4. Would you like a changelog entry?"
+>
+> *Four questions for a rename. The user answers "just do whatever" — the questions were never worth asking.*
+
+**Good** — proportionate caution:
+
+> Agent renames, reads the changed lines back, runs a quick grep for other references, and reports: "Renamed in `cleanup.py` (3 occurrences, comments included). No other references found. No tests cover this file, so I skipped the suite — say the word if you want it run."
+
+*The agent verified (read-back + grep) without spending the user's attention. Rigor went into the work, not into ceremony around it.*
