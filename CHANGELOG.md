@@ -2,6 +2,13 @@
 
 All notable changes to the skill-agent skill are documented here. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [Unreleased]
+
+### Added
+- GitHub Actions package validation for the skill frontmatter, all nine principles, references, manifests, versions, and guidance links.
+- Codex user-level installation and verification guide.
+- Lightweight evaluation scenarios and an evidence-based review rubric.
+
 ## [0.2.0] - 2026-10-06
 
 ### Added

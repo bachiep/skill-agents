@@ -55,6 +55,8 @@ Each principle ships with a falsifiable *test* ("could a reader tell which claim
 
 **Option C — as repo guidance.** Copy `CLAUDE.md` (or `AGENTS.md` for other agents) into your repository root. Both are thin pointers to the skill — the skill file is the single source of truth, so guidance never drifts between copies.
 
+**Codex.** See [the Codex installation guide](docs/codex.md) for a user-level install that makes the skill available across projects.
+
 ## Why this exists
 
 In our experience, the failures that cost the most are rarely wrong code. They are unverified claims ("tests pass" — never run), silent retries (a timed-out charge, retried, billed twice), and actions taken on instructions found inside documents the agent was only asked to read. This skill makes the disciplines that prevent those failures explicit, testable, and cheap to adopt.
@@ -70,6 +72,12 @@ Honesty is a principle here too, so:
 ## Versioning
 
 Changes are recorded in `CHANGELOG.md`. Behavioral guidance is versioned like code: a new principle or a changed test is a minor version; wording clarifications are patches.
+
+## Maintenance
+
+`python scripts/validate.py` validates the skill frontmatter, all nine principles, reference files, package manifests, version agreement, and guidance links. The same check runs in GitHub Actions on pull requests and pushes to `main`.
+
+For a small behavioral evaluation suite, see [evaluation scenarios](docs/evaluation.md).
 
 ## Credits
 
